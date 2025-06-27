@@ -7,8 +7,9 @@ This repository contains a small desktop application built with **Electron** and
 1. Install dependencies with `npm install` (requires Node.js and npm).
 2. Build the project using `npm run build`.
 3. Start the desktop application with `npm start`.
-4. Click **Browse** and select an OpenAPI YAML file.
-5. Choose a port (default is `8000`) and click **Start Server**.
-6. The routes will be available on `http://localhost:<port>` until you click **Stop Server**.
+4. Drag & drop a YAML file onto the window or click **Browse** to select one.
+5. Once loaded, all detected endpoints will be listed in the interface.
+6. Choose a port (default is `8000`) and click **Start Server**.
+7. The routes will be available on `http://localhost:<port>` until you click **Stop Server**.
 
 A minimal YAML parser is included to avoid external dependencies. Only a subset of YAML features is supported.

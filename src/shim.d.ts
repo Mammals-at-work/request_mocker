@@ -30,3 +30,14 @@ declare module 'http' {
   }
   export function createServer(handler: any): Server;
 }
+
+interface API {
+  selectFile: () => Promise<string | null>;
+  startServer: (file: string, port: number) => Promise<boolean>;
+  stopServer: () => Promise<boolean>;
+  listRoutes: (file: string) => Promise<Record<string, any> | null>;
+}
+
+interface Window {
+  api: API;
+}

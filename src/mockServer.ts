@@ -7,7 +7,7 @@ export interface Route {
   headers?: Record<string, string>;
 }
 
-function buildRoutes(spec: YAMLObject): Record<string, Route> {
+export function buildRoutes(spec: YAMLObject): Record<string, Route> {
   const routes: Record<string, Route> = {};
   const paths = spec.paths as YAMLObject | undefined;
   if (!paths) return routes;
@@ -63,4 +63,9 @@ export function startServer(specPath: string, port: number): http.Server {
   });
   server.listen(port, 'localhost');
   return server;
+}
+
+export function extractRoutes(specPath: string): Record<string, Route> {
+  const spec = loadFile(specPath) as YAMLObject;
+  return buildRoutes(spec);
 }

@@ -3,9 +3,16 @@
 <head>
 <meta charset="utf-8" />
 <title>Request Mocker</title>
+<style>
+body { font-family: sans-serif; margin: 20px; }
+.drop-area { border: 2px dashed #888; padding: 20px; margin-bottom: 10px; text-align:center; color:#666; }
+#routes ul { list-style: none; padding: 0; }
+#routes li { padding: 2px 0; }
+</style>
 </head>
 <body>
   <h1>Request Mocker</h1>
+  <div id="drop" class="drop-area">Drop YAML file here or use Browse</div>
   <div>
     <input id="file" type="text" placeholder="OpenAPI YAML file" style="width:300px" />
     <button id="browse">Browse</button>
@@ -18,6 +25,8 @@
     <button id="stop">Stop Server</button>
   </div>
   <div>Status: <span id="status">Stopped</span></div>
+  <h3>Loaded Endpoints</h3>
+  <div id="routes"></div>
 <script src="renderer.js"></script>
 </body>
 </html>

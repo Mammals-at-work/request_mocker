@@ -1,6 +1,6 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import path from 'path';
-import { startServer } from './mockServer';
+import { startServer, extractRoutes } from './mockServer';
 
 let mainWindow: BrowserWindow | null = null;
 let server: ReturnType<typeof startServer> | null = null;
@@ -49,4 +49,12 @@ ipcMain.handle('stop-server', () => {
   server.close();
   server = null;
   return true;
+});
+
+ipcMain.handle('list-routes', (_e, file: string) => {
+  try {
+    return extractRoutes(file);
+  } catch {
+    return null;
+  }
 });
