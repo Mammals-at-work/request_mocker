@@ -2,6 +2,7 @@ import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import path from 'path';
 import { startServer, extractRoutes, getLogs, clearLogs } from './mockServer';
 
+
 let mainWindow: BrowserWindow | null = null;
 let server: ReturnType<typeof startServer> | null = null;
 
@@ -66,3 +67,4 @@ ipcMain.handle('get-logs', () => {
 ipcMain.handle('clear-logs', () => {
   clearLogs();
 });
+

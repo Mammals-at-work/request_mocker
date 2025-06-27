@@ -4,6 +4,7 @@ const statusLabel = document.getElementById('status') as HTMLSpanElement;
 const routesDiv = document.getElementById('routes') as HTMLDivElement;
 const logsPre = document.getElementById('logs') as HTMLPreElement;
 
+
 async function showRoutes(file: string) {
   const routes = await window.api.listRoutes(file);
   routesDiv.innerHTML = '';
@@ -45,6 +46,7 @@ async function refreshLogs() {
   if (ok) statusLabel.textContent = 'Stopped';
 });
 
+
 (document.getElementById('refreshLogs') as HTMLButtonElement).addEventListener('click', refreshLogs);
 (document.getElementById('clearLogs') as HTMLButtonElement).addEventListener('click', async () => {
   await (window as any).api.clearLogs();
@@ -81,3 +83,4 @@ if (dropArea) {
     }
   });
 }
+

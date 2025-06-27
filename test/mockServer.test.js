@@ -2,6 +2,7 @@ const path = require('path');
 const http = require('http');
 const { startServer, getLogs, clearLogs } = require('../dist/mockServer.js');
 
+
 describe('mock server responses', () => {
   const spec = path.join(__dirname, '..', 'sample_api.yaml');
   let port = 9001;
@@ -54,7 +55,6 @@ describe('mock server responses', () => {
       done();
     });
   });
-
   test('logs incoming requests', done => {
     const server = startServer(spec, port++);
     clearLogs();
@@ -67,4 +67,5 @@ describe('mock server responses', () => {
       done();
     });
   });
+
 });

@@ -17,6 +17,7 @@ export interface Route {
 }
 
 export function buildRoutes(spec: YAMLObject): Record<string, Route> {
+
   const routes: Record<string, Route> = {};
   const paths = spec.paths as YAMLObject | undefined;
   if (!paths) return routes;
@@ -50,12 +51,14 @@ export function startServer(specPath: string, port: number): http.Server {
   const spec = loadFile(specPath) as YAMLObject;
   const routes = buildRoutes(spec);
   logs = [];
+
   const server = http.createServer((req, res) => {
     if (!req.url || !req.method) {
       res.statusCode = 404;
       res.end('Not Found');
       return;
     }
+
     let bodyStr = '';
     req.on('data', c => bodyStr += c);
     req.on('end', () => {
@@ -98,3 +101,4 @@ export function getLogs(): LogEntry[] {
 export function clearLogs(): void {
   logs = [];
 }
+

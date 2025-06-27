@@ -8,6 +8,7 @@ This repository contains a small desktop application built with **Electron** and
 2. Build the project using `npm run build`.
 3. Start the desktop application with `npm start`.
 4. Drag & drop a YAML file onto the window or click **Browse** to select one.
+
 5. Once loaded, open the **Endpoints** tab to see the parsed routes.
 6. The **Logs** tab shows each request made to the mock API.
 7. Use the **Settings** tab to choose the port (default `8000`) and interface language before starting the server.
