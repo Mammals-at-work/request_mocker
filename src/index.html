@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8" />
+<title>Request Mocker</title>
+</head>
+<body>
+  <h1>Request Mocker</h1>
+  <div>
+    <input id="file" type="text" placeholder="OpenAPI YAML file" style="width:300px" />
+    <button id="browse">Browse</button>
+  </div>
+  <div>
+    <label>Port: <input id="port" value="8000" size="6" /></label>
+  </div>
+  <div>
+    <button id="start">Start Server</button>
+    <button id="stop">Stop Server</button>
+  </div>
+  <div>Status: <span id="status">Stopped</span></div>
+<script src="renderer.js"></script>
+</body>
+</html>
