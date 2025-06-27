@@ -2,6 +2,8 @@ const fileInput = document.getElementById('file') as HTMLInputElement;
 const portInput = document.getElementById('port') as HTMLInputElement;
 const statusLabel = document.getElementById('status') as HTMLSpanElement;
 const routesDiv = document.getElementById('routes') as HTMLDivElement;
+const logsPre = document.getElementById('logs') as HTMLPreElement;
+
 
 async function showRoutes(file: string) {
   const routes = await window.api.listRoutes(file);
@@ -15,6 +17,13 @@ async function showRoutes(file: string) {
     ul.appendChild(li);
   }
   routesDiv.appendChild(ul);
+}
+
+async function refreshLogs() {
+  const entries = await (window as any).api.getLogs();
+  logsPre.textContent = entries.map((l: any) => {
+    return `${l.method} ${l.path}\nHeaders: ${JSON.stringify(l.headers)}\nBody: ${l.body}\n---`;
+  }).join('\n');
 }
 
 (document.getElementById('browse') as HTMLButtonElement).addEventListener('click', async () => {
@@ -35,6 +44,28 @@ async function showRoutes(file: string) {
 (document.getElementById('stop') as HTMLButtonElement).addEventListener('click', async () => {
   const ok = await (window as any).api.stopServer();
   if (ok) statusLabel.textContent = 'Stopped';
+});
+
+
+(document.getElementById('refreshLogs') as HTMLButtonElement).addEventListener('click', refreshLogs);
+(document.getElementById('clearLogs') as HTMLButtonElement).addEventListener('click', async () => {
+  await (window as any).api.clearLogs();
+  refreshLogs();
+});
+
+const tabButtons = document.querySelectorAll<HTMLButtonElement>('.tabs button');
+tabButtons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabButtons.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    document.querySelectorAll('.tab').forEach(tab => {
+      if ((tab as HTMLElement).id === 'tab-' + btn.dataset.tab) {
+        tab.classList.add('active');
+      } else {
+        tab.classList.remove('active');
+      }
+    });
+  });
 });
 
 const dropArea = document.getElementById('drop');

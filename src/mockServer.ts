@@ -1,6 +1,15 @@
 import http from 'http';
 import { loadFile, YAMLObject } from './simpleYaml';
 
+let logs: LogEntry[] = [];
+
+export interface LogEntry {
+  method: string;
+  path: string;
+  headers: Record<string, any>;
+  body: string;
+}
+
 export interface Route {
   status: number;
   body: any;
@@ -41,26 +50,40 @@ export function buildRoutes(spec: YAMLObject): Record<string, Route> {
 export function startServer(specPath: string, port: number): http.Server {
   const spec = loadFile(specPath) as YAMLObject;
   const routes = buildRoutes(spec);
+  logs = [];
+
   const server = http.createServer((req, res) => {
     if (!req.url || !req.method) {
       res.statusCode = 404;
       res.end('Not Found');
       return;
     }
-    const key = `${req.method.toLowerCase()} ${req.url}`;
-    const route = routes[key];
-    if (!route) {
-      res.statusCode = 404;
-      res.end('Not Found');
-      return;
-    }
-    res.statusCode = route.status;
-    if (typeof route.body === 'object') {
-      res.setHeader('Content-Type', 'application/json');
-      res.end(JSON.stringify(route.body));
-    } else {
-      res.end(String(route.body));
-    }
+
+    let bodyStr = '';
+    req.on('data', c => bodyStr += c);
+    req.on('end', () => {
+      logs.push({
+        method: req.method!,
+        path: req.url!,
+        headers: req.headers,
+        body: bodyStr,
+      });
+
+      const key = `${req.method!.toLowerCase()} ${req.url!}`;
+      const route = routes[key];
+      if (!route) {
+        res.statusCode = 404;
+        res.end('Not Found');
+        return;
+      }
+      res.statusCode = route.status;
+      if (typeof route.body === 'object') {
+        res.setHeader('Content-Type', 'application/json');
+        res.end(JSON.stringify(route.body));
+      } else {
+        res.end(String(route.body));
+      }
+    });
   });
   server.listen(port, 'localhost');
   return server;
@@ -69,5 +92,13 @@ export function startServer(specPath: string, port: number): http.Server {
 export function extractRoutes(specPath: string): Record<string, Route> {
   const spec = loadFile(specPath) as YAMLObject;
   return buildRoutes(spec);
+}
+
+export function getLogs(): LogEntry[] {
+  return logs;
+}
+
+export function clearLogs(): void {
+  logs = [];
 }
 

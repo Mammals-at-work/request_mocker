@@ -8,6 +8,11 @@ body { font-family: sans-serif; margin: 20px; }
 .drop-area { border: 2px dashed #888; padding: 20px; margin-bottom: 10px; text-align:center; color:#666; }
 #routes ul { list-style: none; padding: 0; }
 #routes li { padding: 2px 0; }
+.tabs button { margin-right: 5px; }
+.tab { display: none; margin-top: 10px; }
+.tab.active { display: block; }
+pre { background:#f0f0f0; padding:10px; overflow:auto; }
+
 </style>
 </head>
 <body>
@@ -18,16 +23,38 @@ body { font-family: sans-serif; margin: 20px; }
     <button id="browse">Browse</button>
   </div>
   <div>
-    <label>Port: <input id="port" value="8000" size="6" /></label>
-  </div>
-  <div>
+
     <button id="start">Start Server</button>
     <button id="stop">Stop Server</button>
+    <span id="status">Stopped</span>
   </div>
-  <div>Status: <span id="status">Stopped</span></div>
-  <h3>Loaded Endpoints</h3>
-  <div id="routes"></div>
-
-<script src="renderer.js"></script>
+  <div class="tabs">
+    <button data-tab="endpoints" class="active">Endpoints</button>
+    <button data-tab="logs">Logs</button>
+    <button data-tab="settings">Settings</button>
+  </div>
+  <div id="tab-endpoints" class="tab active">
+    <h3>Loaded Endpoints</h3>
+    <div id="routes"></div>
+  </div>
+  <div id="tab-logs" class="tab">
+    <button id="refreshLogs">Refresh</button>
+    <button id="clearLogs">Clear</button>
+    <pre id="logs"></pre>
+  </div>
+  <div id="tab-settings" class="tab">
+    <div>
+      <label>Port: <input id="port" value="8000" size="6" /></label>
+    </div>
+    <div>
+      <label>Language:
+        <select id="lang">
+          <option value="en">English</option>
+          <option value="es">Español</option>
+        </select>
+      </label>
+    </div>
+  </div>
+  <script src="renderer.js"></script>
 </body>
 </html>
