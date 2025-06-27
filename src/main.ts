@@ -2,7 +2,6 @@ import { app, BrowserWindow, dialog, ipcMain } from 'electron';
 import path from 'path';
 import { startServer, extractRoutes, getLogs, clearLogs } from './mockServer';
 
-
 let mainWindow: BrowserWindow | null = null;
 let server: ReturnType<typeof startServer> | null = null;
 
@@ -33,7 +32,9 @@ ipcMain.handle('select-file', async () => {
   if (!mainWindow) return null;
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openFile'],
-    filters: [{ name: 'YAML', extensions: ['yaml', 'yml'] }],
+
+    filters: [{ name: 'OpenAPI', extensions: ['yaml', 'yml', 'json'] }],
+
   });
   if (result.canceled || result.filePaths.length === 0) return null;
   return result.filePaths[0];
@@ -67,4 +68,3 @@ ipcMain.handle('get-logs', () => {
 ipcMain.handle('clear-logs', () => {
   clearLogs();
 });
-

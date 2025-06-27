@@ -1,5 +1,7 @@
 import http from 'http';
-import { loadFile, YAMLObject } from './simpleYaml';
+import { YAMLObject } from './simpleYaml';
+import { loadSpecFile } from './specLoader';
+
 
 let logs: LogEntry[] = [];
 
@@ -48,7 +50,7 @@ export function buildRoutes(spec: YAMLObject): Record<string, Route> {
 }
 
 export function startServer(specPath: string, port: number): http.Server {
-  const spec = loadFile(specPath) as YAMLObject;
+  const spec = loadSpecFile(specPath) as YAMLObject;
   const routes = buildRoutes(spec);
   logs = [];
 
@@ -90,7 +92,8 @@ export function startServer(specPath: string, port: number): http.Server {
 }
 
 export function extractRoutes(specPath: string): Record<string, Route> {
-  const spec = loadFile(specPath) as YAMLObject;
+  const spec = loadSpecFile(specPath) as YAMLObject;
+
   return buildRoutes(spec);
 }
 
@@ -101,4 +104,3 @@ export function getLogs(): LogEntry[] {
 export function clearLogs(): void {
   logs = [];
 }
-
