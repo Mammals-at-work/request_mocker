@@ -32,7 +32,9 @@ ipcMain.handle('select-file', async () => {
   if (!mainWindow) return null;
   const result = await dialog.showOpenDialog(mainWindow, {
     properties: ['openFile'],
+
     filters: [{ name: 'OpenAPI', extensions: ['yaml', 'yml', 'json'] }],
+
   });
   if (result.canceled || result.filePaths.length === 0) return null;
   return result.filePaths[0];

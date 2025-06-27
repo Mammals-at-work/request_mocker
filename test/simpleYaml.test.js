@@ -19,3 +19,4 @@ test('load sample JSON file', () => {
   expect(obj.paths['/hello'].get.responses['200'].content['application/json'].example.message)
     .toBe('Hello World');
 });
+

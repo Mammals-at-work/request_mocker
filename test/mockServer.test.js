@@ -1,13 +1,13 @@
 const path = require('path');
 const http = require('http');
 const { startServer, getLogs, clearLogs } = require('../dist/mockServer.js');
-
 const specs = [
   path.join(__dirname, '..', 'sample_api.yaml'),
   path.join(__dirname, '..', 'sample_api.json'),
 ];
 
 describe.each(specs)('mock server responses %s', spec => {
+
   let port = 9001;
 
   test('GET /hello returns sample message', done => {
