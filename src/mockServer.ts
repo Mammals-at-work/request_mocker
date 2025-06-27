@@ -8,6 +8,7 @@ export interface Route {
 }
 
 export function buildRoutes(spec: YAMLObject): Record<string, Route> {
+
   const routes: Record<string, Route> = {};
   const paths = spec.paths as YAMLObject | undefined;
   if (!paths) return routes;
@@ -69,3 +70,4 @@ export function extractRoutes(specPath: string): Record<string, Route> {
   const spec = loadFile(specPath) as YAMLObject;
   return buildRoutes(spec);
 }
+

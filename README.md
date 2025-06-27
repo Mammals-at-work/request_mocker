@@ -11,5 +11,4 @@ This repository contains a small desktop application built with **Electron** and
 5. Once loaded, all detected endpoints will be listed in the interface.
 6. Choose a port (default is `8000`) and click **Start Server**.
 7. The routes will be available on `http://localhost:<port>` until you click **Stop Server**.
-
 A minimal YAML parser is included to avoid external dependencies. Only a subset of YAML features is supported.
