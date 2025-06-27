@@ -5,10 +5,12 @@
   "description": "Simple OpenAPI mock server with Electron UI",
   "scripts": {
     "build": "tsc",
-    "start": "electron ."
+    "start": "electron .",
+    "test": "npm run build && jest"
   },
   "devDependencies": {
     "typescript": "^5.0.0",
-    "electron": "^30.0.0"
+    "electron": "^30.0.0",
+    "jest": "^29.0.0"
   }
 }
