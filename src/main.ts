@@ -7,7 +7,7 @@ let mainWindow: BrowserWindow | null = null;
 let server: ReturnType<typeof startServer> | null = null;
 
 function createWindow() {
-  mainWindow = new BrowserWindow({
+    filters: [{ name: 'OpenAPI', extensions: ['yaml', 'yml', 'json'] }],
     width: 500,
     height: 300,
     webPreferences: {

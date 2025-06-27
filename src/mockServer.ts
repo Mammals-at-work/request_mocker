@@ -1,5 +1,6 @@
 import http from 'http';
-import { loadFile, YAMLObject } from './simpleYaml';
+import { YAMLObject } from './simpleYaml';
+import { loadSpecFile } from './specLoader';
 
 let logs: LogEntry[] = [];
 
@@ -18,8 +19,8 @@ export interface Route {
 
 export function buildRoutes(spec: YAMLObject): Record<string, Route> {
 
-  const routes: Record<string, Route> = {};
-  const paths = spec.paths as YAMLObject | undefined;
+  const spec = loadSpecFile(specPath) as YAMLObject;
+  const spec = loadSpecFile(specPath) as YAMLObject;
   if (!paths) return routes;
   for (const path of Object.keys(paths)) {
     const methods = (paths[path] as YAMLObject) || {};
