@@ -5,6 +5,7 @@ const specs = [
   path.join(__dirname, '..', 'sample_api.yaml'),
   path.join(__dirname, '..', 'sample_api.json'),
 ];
+const dataFile = path.join(__dirname, '..', 'sample_data.json');
 
 describe.each(specs)('mock server responses %s', spec => {
 
@@ -70,5 +71,43 @@ describe.each(specs)('mock server responses %s', spec => {
       server.close();
       done();
     });
+  });
+});
+
+describe.each(specs)('mock server responses with data file %s', spec => {
+
+  let port = 9101;
+
+  test('GET /hello returns overridden message', done => {
+    const server = startServer(spec, port++, dataFile);
+    http.get(`http://localhost:${server.address().port}/hello`, res => {
+      let data = '';
+      res.on('data', c => data += c);
+      res.on('end', () => {
+        expect(JSON.parse(data)).toEqual({ message: 'Hola Mundo' });
+        server.close();
+        done();
+      });
+    });
+  });
+
+  test('POST /echo uses custom status', done => {
+    const server = startServer(spec, port++, dataFile);
+    const req = http.request({
+      hostname: 'localhost',
+      port: server.address().port,
+      path: '/echo',
+      method: 'POST'
+    }, res => {
+      let body = '';
+      res.on('data', c => body += c);
+      res.on('end', () => {
+        expect(res.statusCode).toBe(201);
+        expect(JSON.parse(body)).toEqual({ message: 'Custom' });
+        server.close();
+        done();
+      });
+    });
+    req.end();
   });
 });
