@@ -13,7 +13,8 @@ function createWindow() {
       preload: path.join(__dirname, 'preload.js'),
     },
   });
-  mainWindow.loadFile(path.join(__dirname, 'index.html'));
+  // Load the new Vue frontend located in the root frontend folder
+  mainWindow.loadFile(path.join(__dirname, '..', 'frontend', 'index.html'));
 }
 
 app.whenReady().then(() => {

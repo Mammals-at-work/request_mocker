@@ -1,0 +1,44 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+.container {
+  max-width: 600px;
+  margin: auto;
+}
+
+.file-selector input {
+  width: 70%;
+  padding: 4px;
+}
+
+.file-selector button {
+  margin-left: 5px;
+}
+
+.controls {
+  margin-top: 10px;
+}
+
+.tabs {
+  margin-top: 15px;
+}
+
+.tabs button {
+  margin-right: 5px;
+}
+
+.tabs button.active {
+  font-weight: bold;
+}
+
+@media (max-width: 600px) {
+  .file-selector input {
+    width: 100%;
+    margin-bottom: 5px;
+  }
+  .file-selector button {
+    width: 100%;
+  }
+}
