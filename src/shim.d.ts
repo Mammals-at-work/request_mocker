@@ -33,9 +33,10 @@ declare module 'http' {
 
 interface API {
   selectFile: () => Promise<string | null>;
-  startServer: (file: string, port: number) => Promise<boolean>;
+  selectDataFile: () => Promise<string | null>;
+  startServer: (file: string, port: number, data?: string) => Promise<boolean>;
   stopServer: () => Promise<boolean>;
-  listRoutes: (file: string) => Promise<Record<string, any> | null>;
+  listRoutes: (file: string, data?: string) => Promise<Record<string, any> | null>;
 }
 
 interface Window {

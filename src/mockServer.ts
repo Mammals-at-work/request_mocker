@@ -49,9 +49,33 @@ export function buildRoutes(spec: YAMLObject): Record<string, Route> {
   return routes;
 }
 
-export function startServer(specPath: string, port: number): http.Server {
+export function startServer(specPath: string, port: number, dataPath?: string): http.Server {
   const spec = loadSpecFile(specPath) as YAMLObject;
   const routes = buildRoutes(spec);
+  if (dataPath) {
+    const overrides = loadSpecFile(dataPath) as YAMLObject;
+    for (const key of Object.keys(overrides)) {
+      const val: any = (overrides as YAMLObject)[key];
+      if (routes[key]) {
+        if (val && typeof val === 'object' && 'body' in val) {
+          routes[key].body = (val as any).body;
+          if ((val as any).status) routes[key].status = (val as any).status;
+        } else {
+          routes[key].body = val;
+        }
+      } else {
+        let body: any;
+        let status = 200;
+        if (val && typeof val === 'object' && 'body' in val) {
+          body = (val as any).body;
+          if ((val as any).status) status = (val as any).status;
+        } else {
+          body = val;
+        }
+        routes[key] = { status, body };
+      }
+    }
+  }
   logs = [];
 
   const server = http.createServer((req, res) => {
@@ -91,10 +115,35 @@ export function startServer(specPath: string, port: number): http.Server {
   return server;
 }
 
-export function extractRoutes(specPath: string): Record<string, Route> {
+export function extractRoutes(specPath: string, dataPath?: string): Record<string, Route> {
   const spec = loadSpecFile(specPath) as YAMLObject;
+  const routes = buildRoutes(spec);
+  if (dataPath) {
+    const overrides = loadSpecFile(dataPath) as YAMLObject;
+    for (const key of Object.keys(overrides)) {
+      const val: any = (overrides as YAMLObject)[key];
+      if (routes[key]) {
+        if (val && typeof val === 'object' && 'body' in val) {
+          routes[key].body = (val as any).body;
+          if ((val as any).status) routes[key].status = (val as any).status;
+        } else {
+          routes[key].body = val;
+        }
+      } else {
+        let body: any;
+        let status = 200;
+        if (val && typeof val === 'object' && 'body' in val) {
+          body = (val as any).body;
+          if ((val as any).status) status = (val as any).status;
+        } else {
+          body = val;
+        }
+        routes[key] = { status, body };
+      }
+    }
+  }
 
-  return buildRoutes(spec);
+  return routes;
 }
 
 export function getLogs(): LogEntry[] {

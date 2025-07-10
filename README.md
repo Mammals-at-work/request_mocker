@@ -12,7 +12,8 @@ This repository contains a small desktop application built with **Electron** and
 5. Once loaded, open the **Endpoints** tab to see the parsed routes.
 6. The **Logs** tab shows each request made to the mock API.
 7. Use the **Settings** tab to choose the port (default `8000`) and interface language before starting the server.
-8. Click **Start Server** and the routes will be available on `http://localhost:<port>` until you click **Stop Server**.
+8. Optionally provide a JSON or YAML **Data file** to override the example responses for each route.
+9. Click **Start Server** and the routes will be available on `http://localhost:<port>` until you click **Stop Server**.
 
 A minimal YAML parser is included to avoid external dependencies. JSON specs are parsed using the built-in JSON parser. Only a subset of YAML features is supported.
 

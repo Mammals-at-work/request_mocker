@@ -1,11 +1,12 @@
 const fileInput = document.getElementById('file') as HTMLInputElement;
 const portInput = document.getElementById('port') as HTMLInputElement;
+const dataInput = document.getElementById('dataFile') as HTMLInputElement;
 const statusLabel = document.getElementById('status') as HTMLSpanElement;
 const routesDiv = document.getElementById('routes') as HTMLDivElement;
 const logsPre = document.getElementById('logs') as HTMLPreElement;
 
 async function showRoutes(file: string) {
-  const routes = await window.api.listRoutes(file);
+  const routes = await window.api.listRoutes(file, dataInput.value || undefined);
   routesDiv.innerHTML = '';
   if (!routes) return;
   const ul = document.createElement('ul');
@@ -33,10 +34,18 @@ async function refreshLogs() {
   }
 });
 
+(document.getElementById('browseData') as HTMLButtonElement).addEventListener('click', async () => {
+  const file = await (window as any).api.selectDataFile();
+  if (file) {
+    dataInput.value = file;
+    showRoutes(fileInput.value);
+  }
+});
+
 (document.getElementById('start') as HTMLButtonElement).addEventListener('click', async () => {
   const file = fileInput.value;
   const port = parseInt(portInput.value, 10) || 8000;
-  const ok = await (window as any).api.startServer(file, port);
+  const ok = await (window as any).api.startServer(file, port, dataInput.value || undefined);
   if (ok) statusLabel.textContent = `Running on http://localhost:${port}`;
 });
 

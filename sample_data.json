@@ -1,0 +1,4 @@
+{
+  "get /hello": { "body": { "message": "Hola Mundo" } },
+  "post /echo": { "status": 201, "body": { "message": "Custom" } }
+}

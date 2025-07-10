@@ -40,9 +40,19 @@ ipcMain.handle('select-file', async () => {
   return result.filePaths[0];
 });
 
-ipcMain.handle('start-server', (_e, file: string, port: number) => {
+ipcMain.handle('select-data-file', async () => {
+  if (!mainWindow) return null;
+  const result = await dialog.showOpenDialog(mainWindow, {
+    properties: ['openFile'],
+    filters: [{ name: 'Data', extensions: ['yaml', 'yml', 'json'] }],
+  });
+  if (result.canceled || result.filePaths.length === 0) return null;
+  return result.filePaths[0];
+});
+
+ipcMain.handle('start-server', (_e, file: string, port: number, data?: string) => {
   if (server) return false;
-  server = startServer(file, port);
+  server = startServer(file, port, data);
   return true;
 });
 
@@ -53,9 +63,9 @@ ipcMain.handle('stop-server', () => {
   return true;
 });
 
-ipcMain.handle('list-routes', (_e, file: string) => {
+ipcMain.handle('list-routes', (_e, file: string, data?: string) => {
   try {
-    return extractRoutes(file);
+    return extractRoutes(file, data);
   } catch {
     return null;
   }
