@@ -4,13 +4,25 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Request Mocker</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Pacifico&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="styles/main.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.indigo.min.css">
 </head>
 <body>
-  <header ><h1>Request Mocker</h1></header>
+  <header><hgroup>
+  <h1>Request Mocker</h1>
+  <cite>Where the requests have responses</cite>
+</hgroup></header>
   <div class="containerGeneral">
     <div class="containerMenu">
+      <details name="options" id="dataSources">
+          <summary class="secondary">Data Sources</summary>
+          <div>
+          <div class="container"><button>+ Add data source</button></div>
+        </div>
+      </details>
       <details name="options" id="logsDetails">
         <summary  class="secondary">Logs</summary>
           <div id="logsTab" class="tab">
@@ -22,42 +34,36 @@
       <details name="options" id="settings">
           <summary class="secondary">Configuration</summary>
           <div>
-          <label>Port: <input id="portInput" value="8000" size="6" /></label>
-          
-          <label>Language:
-            <select id="langSelect">
-              <option selected disabled value="">Select</option>
-              <option value="en">English</option>
-              <option value="es">Español</option>
-            </select>
-          </label>
-        </div>
-      </details>
-      <details name="options" id="dataSources">
-          <summary class="secondary">Data Sources</summary>
-          <div>
-          <label>Add data source</label><button>+</button>
-          
-          <label>Language:</label>
-            <select id="langSelect">
-              <option selected disabled value="">Select</option>
-              <option value="en">English</option>
-              <option value="es">Español</option>
-            </select>
-        </div>
+            <label>Port: <input id="portInput" value="8000" size="6" /></label>
+            
+            <label>Language:</label>
+              <select id="langSelect">
+                <option selected disabled value="">Select</option>
+                <option value="en">English</option>
+                <option value="es">Español</option>
+              </select>
+          </div>
       </details>
     </div>
       <article>
         <header>API Management</header>
-        <input id="fileInput" type="text" placeholder="OpenAPI file"/>
-        <button id="browseBtn" class="secondary">Browse</button>
-        <button id="startBtn">Start</button>
-        <button id="stopBtn">Stop</button>
-        <span id="status">🔴 Stopped</span>
+        <fieldset role="group">
+          <input id="fileInput" type="text" placeholder="OpenAPI file" />
+          <button id="browseBtn" >Browse</button>
+        </fieldset>
+      
+        <fieldset>
+          <label>
+            Start <input name="start" type="checkbox" role="switch" id="startBtn"/>
+            <span id="status">🔴 Stopped</span>
+          </label>
+        </fieldset>
+
         <footer>
-          <div id="endpointsView">
-          <h3 class="center">Loaded Endpoints</h3>
-          <div id="routes"></div>
+          <details>
+            <summary>Endpoints</summary>
+            <div id="routes"></div>
+          </details>
         </footer>
       </article>
   </div>
@@ -116,23 +122,22 @@
     }
 
     // Start server
-    document.getElementById('startBtn').addEventListener('click', async () => {
+    document.getElementById('startBtn').addEventListener('change', async () => {
       if (!file || !window.api || !window.api.startServer) return;
-      const ok = await window.api.startServer(file, port);
-      if (ok) {
-        status = `🟢 🏃‍➡️ on http://localhost:${port}`;
-        document.getElementById('status').textContent = status;
-        checkLogs(); // Start checking logs
-      }
-    });
-
-    // Stop server
-    document.getElementById('stopBtn').addEventListener('click', async () => {
-      if (!window.api || !window.api.stopServer) return;
-      const ok = await window.api.stopServer();
-      if (ok) {
-        status = '🔴 Stopped';
-        document.getElementById('status').textContent = status;
+      const startBtn = document.getElementById('startBtn');
+      if (startBtn.checked) {
+        const ok = await window.api.startServer(file, port);
+        if (ok) {
+          status = `🟢 🏃‍➡️ on http://localhost:${port}`;
+          document.getElementById('status').textContent = status;
+          checkLogs(); // Start checking logs
+        }
+      } else {
+        const ok = await window.api.stopServer();
+        if (ok) {
+          status = '🔴 Stopped';
+          document.getElementById('status').textContent = status;
+        }
       }
     });
 
@@ -205,6 +210,8 @@
         checkLogs();
       }, 5000); // Refresh logs every 5 seconds
     }
+    
+
   </script>
 </body>
 </html>
