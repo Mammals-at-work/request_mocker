@@ -8,8 +8,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@picocss/pico@2/css/pico.indigo.min.css">
 </head>
 <body>
-  <div class="grid">
-    <div>
+  <header ><h1>Request Mocker</h1></header>
+  <div class="containerGeneral">
+    <div class="containerMenu">
       <details name="options" id="logsDetails">
         <summary  class="secondary">Logs</summary>
           <div id="logsTab" class="tab">
@@ -32,27 +33,33 @@
           </label>
         </div>
       </details>
+      <details name="options" id="dataSources">
+          <summary class="secondary">Data Sources</summary>
+          <div>
+          <label>Add data source</label><button>+</button>
+          
+          <label>Language:</label>
+            <select id="langSelect">
+              <option selected disabled value="">Select</option>
+              <option value="en">English</option>
+              <option value="es">Español</option>
+            </select>
+        </div>
+      </details>
     </div>
-    <div class="container">
-      <h1>Request Mocker</h1>
-          <article>
-            <header>API Management</header>
-            <input id="fileInput" type="text" placeholder="OpenAPI file"/>
-            <button id="browseBtn" class="secondary">Browse</button>
-            <button id="startBtn">Start</button>
-            <button id="stopBtn">Stop</button>
-            <span id="status">🔴 Stopped</span>
-            <footer>
-              <div id="endpointsView">
-              <h3 class="center">Loaded Endpoints</h3>
-              <div id="routes"></div>
-            </footer>
-          </article>
-    </div>
-  </div>  
-    
-    
-   
+      <article>
+        <header>API Management</header>
+        <input id="fileInput" type="text" placeholder="OpenAPI file"/>
+        <button id="browseBtn" class="secondary">Browse</button>
+        <button id="startBtn">Start</button>
+        <button id="stopBtn">Stop</button>
+        <span id="status">🔴 Stopped</span>
+        <footer>
+          <div id="endpointsView">
+          <h3 class="center">Loaded Endpoints</h3>
+          <div id="routes"></div>
+        </footer>
+      </article>
   </div>
   <script src="./services/api.js"></script>
   <script>
