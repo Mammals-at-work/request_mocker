@@ -14,5 +14,8 @@
     "electron": "30.0.0",
     "jest": "29.0.0",
     "typescript": "^5.8.0"
+  },
+  "dependencies": {
+    "@picocss/pico": "^2.1.1"
   }
 }
