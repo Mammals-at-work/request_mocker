@@ -2,14 +2,31 @@ import http from 'http';
 import { YAMLObject } from './simpleYaml';
 import { loadSpecFile } from './specLoader';
 
-
 let logs: LogEntry[] = [];
 
 export interface LogEntry {
+  request: LogEntryRequest;
+  response: LogEntryResponse;
+  system?: LogSystem;
+} 
+
+export interface LogSystem { 
+  msg: string 
+};
+
+
+
+export interface LogEntryRequest {
   method: string;
   path: string;
   headers: Record<string, any>;
-  body: string;
+  body?: string;
+}
+
+export interface LogEntryResponse {
+  status: number;
+  headers?: Record<string, string>;
+  body?: string | Record<string, any>;
 }
 
 export interface Route {
@@ -77,29 +94,23 @@ export function startServer(specPath: string, port: number, dataPath?: string): 
     }
   }
   logs = [];
-
+let bodyStr = '';
   const server = http.createServer((req, res) => {
     if (!req.url || !req.method) {
       res.statusCode = 404;
       res.end('Not Found');
+      printLogsRequest(req, res);
       return;
     }
-
-    let bodyStr = '';
+    bodyStr = '';
     req.on('data', c => bodyStr += c);
     req.on('end', () => {
-      logs.push({
-        method: req.method!,
-        path: req.url!,
-        headers: req.headers,
-        body: bodyStr,
-      });
-
       const key = `${req.method!.toLowerCase()} ${req.url!}`;
       const route = routes[key];
       if (!route) {
         res.statusCode = 404;
         res.end('Not Found');
+        printLogsRequest(req, res);
         return;
       }
       res.statusCode = route.status;
@@ -109,10 +120,37 @@ export function startServer(specPath: string, port: number, dataPath?: string): 
       } else {
         res.end(String(route.body));
       }
+      printLogsRequest(req, res);
     });
   });
   server.listen(port, 'localhost');
+
+  server.on('error', (err) => {
+    printLogSystem(`[ SYSTEM ] Server error: ${err.message}`);
+    console.error('Server error:', err);
+  });
+
+  server.on('listen', (err) => {
+    printLogSystem(`[ SYSTEM ] Server Listening on: http://localhost:${port}`);
+  });
   return server;
+
+  function printLogsRequest(req: any, res: any){
+    logs.push({ request: {
+        method: req.method!,
+        path: req.url!,
+        headers: req.headers,
+        body: req.body ? req.body.toString() : '',
+      }, response: {
+        status: res.statusCode,
+        headers: res.getHeaders() as Record<string, string>,
+        body: res.body ? res.body.toString() : '',}
+      });
+  }
+
+  function printLogSystem(msg: string){
+    logs.push({ request: undefined, response: undefined, system: { msg }});
+  }
 }
 
 export function extractRoutes(specPath: string, dataPath?: string): Record<string, Route> {

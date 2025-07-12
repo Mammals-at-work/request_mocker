@@ -1,23 +1,27 @@
 import { app, BrowserWindow, dialog, ipcMain } from 'electron';
+
 import path from 'path';
 import { startServer, extractRoutes, getLogs, clearLogs } from './mockServer';
 
-let mainWindow: BrowserWindow | null = null;
+let mainWindow: BrowserWindow;
 let server: ReturnType<typeof startServer> | null = null;
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    width: 500,
-    height: 300,
+    width: 1280,
+    height: 1080,
     webPreferences: {
       preload: path.join(__dirname, 'preload.js'),
+
     },
   });
-  // Load the new Vue frontend located in the root frontend folder
-  mainWindow.loadFile(path.join(__dirname, 'index.html'));
-  console.log('Loading index.html from:', path.join(__dirname, 'index.html'));
-   // Añade esta línea para abrir las DevTools automáticamente
-  mainWindow.webContents.openDevTools();
+
+  mainWindow.loadFile(path.join(__dirname,  'frontend', 'index.html'));
+  console.log('Loading index.html from:', path.join(__dirname, 'frontend', 'index.html'));
+  // Añade esta línea para abrir las DevTools automáticamente
+  if (mainWindow) {
+    mainWindow.webContents.openDevTools();
+  }
 }
 
 app.whenReady().then(() => {

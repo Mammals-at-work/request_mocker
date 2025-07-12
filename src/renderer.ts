@@ -6,7 +6,7 @@ const routesDiv = document.getElementById('routes') as HTMLDivElement;
 const logsPre = document.getElementById('logs') as HTMLPreElement;
 
 async function showRoutes(file: string) {
-  const routes = await window.api.listRoutes(file, dataInput.value || undefined);
+  const routes = await window.api.listRoutes(file);
   routesDiv.innerHTML = '';
   if (!routes) return;
   const ul = document.createElement('ul');

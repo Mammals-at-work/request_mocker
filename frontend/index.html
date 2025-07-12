@@ -18,13 +18,13 @@
   <div class="containerGeneral">
     <div class="containerMenu">
       <details name="options" id="dataSources">
-          <summary class="secondary">Data Sources</summary>
+          <summary>Datasources <img src="assets/dataset.png" alt="config" style="height:1em;vertical-align:middle;"></summary>
           <div>
           <div class="container"><button>+ Add data source</button></div>
         </div>
       </details>
       <details name="options" id="logsDetails">
-        <summary  class="secondary">Logs</summary>
+        <summary>Logs <img src="assets/logs.png" alt="config" style="height:1em;vertical-align:middle;"></summary>
           <div id="logsTab" class="tab">
             <pre id="logs"></pre>
             <button id="refreshLogsBtn" class="outline contrast">Refresh</button>
@@ -32,7 +32,7 @@
           </div>
       </details>
       <details name="options" id="settings">
-          <summary class="secondary">Configuration</summary>
+            <summary>Configuration<img src="assets/config.png" alt="config" style="height:1em;vertical-align:middle;"></summary>
           <div>
             <label>Port: <input id="portInput" value="8000" size="6" /></label>
             
@@ -67,7 +67,6 @@
         </footer>
       </article>
   </div>
-  <script src="./services/api.js"></script>
   <script>
 
     // State
@@ -148,14 +147,15 @@
 
     function getAndRenderLogs() {
       if (!window.api || !window.api.getLogs) return;
+      const logsContainer = document.getElementById('logs');
+      
       if (logs.length === 0) {
-        const logsContainer = document.getElementById('logs');
         logsContainer.innerHTML = '<div aria-busy="true">Loading logs...</div>';
       } 
 
-      const logsContainer = document.getElementById('logs');
-
       window.api.getLogs().then((newLogs) => {
+        console.log('New logs:', newLogs);
+        console.log('Current logs:', logs);
         if (newLogs.length <= logs.length) {
           // If no new logs, do not update
           return;
@@ -167,19 +167,34 @@
 
     function renderRequestArray(logs) {
     return logs.map(item => {
+        if(item.system) {
+          // System log, render differently
+          const card = document.createElement('article');
+          card.style.marginBottom = '1rem';
+          card.innerHTML = `<header><strong>${item.system}</strong></header>`;
+          return card.outerHTML;
+        }
         const card = document.createElement('article');
+        const { request, response }= item;
         card.style.marginBottom = '1rem';
+
         card.innerHTML = `
-          <header>
-            <strong><kbd>${item.method}</kbd> <span style="color: #3a3;">${item.path}</span></strong>
-          </header>
-          <details>
-            <summary>Headers</summary>
-            <pre><code>${JSON.stringify(item.headers, null, 2)}</code></pre>
+          
+          <strong><kbd>${request.method}</kbd>&nbsp<kbd>${response.status}</kbd> <span style="color: #3a3;">${request.path}</span></strong>
+          
+          <details name"Request">
+            <summary>Request</summary>
+            <div>
+            <pre>Headers:<code type="json">${JSON.stringify(request.headers, null, 2)}</code>\n</pre><hr>
+            <pre>Body:<code>${request.body ? request.body : '<empty>'}</code></pre>
+            </div>
           </details>
-          <details>
-            <summary>Body</summary>
-            <pre><code>${item.body ? item.body : '<empty>'}</code></pre>
+          <details name"Response">
+            <summary>Response</summary>
+            <div>
+            <pre>Headers:\n<code type="json">${JSON.stringify(response.headers, null, 2)}</code>\n</pre><hr>
+            <pre>Body:\n<code>${response.body ? response.body : '<empty>'}</code></pre>
+            </div>
           </details>
         `;
         return card.outerHTML;
