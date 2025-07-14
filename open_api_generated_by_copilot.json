@@ -1,0 +1,265 @@
+{
+  "openapi": "3.0.3",
+  "info": {
+    "title": "API de ejemplo OpenAPI 3.0",
+    "version": "1.0.0",
+    "description": "API de ejemplo con endpoints variados, todos los verbos, diferentes tipos de datos y todos los códigos de estado."
+  },
+  "servers": [
+    { "url": "http://localhost:8000/api/v1" }
+  ],
+  "paths": {
+    "/users": {
+      "get": {
+        "summary": "Obtener usuarios",
+        "parameters": [
+          { "in": "query", "name": "page", "schema": { "type": "integer" }, "required": false }
+        ],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "example": [{"id":1,"name":"Alice"}] } } },
+          "401": { "description": "No autorizado" },
+          "403": { "description": "Prohibido" },
+          "404": { "description": "No encontrado" },
+          "500": { "description": "Error interno" }
+        }
+      },
+      "post": {
+        "summary": "Crear usuario",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "name": { "type": "string" }, "email": { "type": "string" } } },
+              "example": { "name": "Bob", "email": "bob@example.com" }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Creado" },
+          "400": { "description": "Datos inválidos" },
+          "409": { "description": "Conflicto" },
+          "422": { "description": "Entidad no procesable" },
+          "500": { "description": "Error interno" }
+        }
+      }
+    },
+    "/users/{id}": {
+      "get": {
+        "summary": "Obtener usuario por ID",
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "200": { "description": "OK", "content": { "application/json": { "example": { "id": 1, "name": "Alice" } } } },
+          "404": { "description": "No encontrado" },
+          "410": { "description": "Gone" },
+          "500": { "description": "Error interno" }
+        }
+      },
+      "put": {
+        "summary": "Actualizar usuario",
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "name": { "type": "string" }, "email": { "type": "string" } } },
+              "example": { "name": "Alice Updated", "email": "alice@newmail.com" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Actualizado" },
+          "400": { "description": "Datos inválidos" },
+          "404": { "description": "No encontrado" },
+          "409": { "description": "Conflicto" },
+          "500": { "description": "Error interno" }
+        }
+      },
+      "patch": {
+        "summary": "Modificar parcialmente usuario",
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object", "properties": { "name": { "type": "string" } } },
+              "example": { "name": "Solo nombre" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Modificado" },
+          "404": { "description": "No encontrado" },
+          "500": { "description": "Error interno" }
+        }
+      },
+      "delete": {
+        "summary": "Eliminar usuario",
+        "parameters": [
+          { "in": "path", "name": "id", "required": true, "schema": { "type": "integer" } }
+        ],
+        "responses": {
+          "204": { "description": "Eliminado" },
+          "404": { "description": "No encontrado" },
+          "403": { "description": "Prohibido" },
+          "500": { "description": "Error interno" }
+        }
+      }
+    },
+    "/login": {
+      "post": {
+        "summary": "Login de usuario",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "username": { "type": "string" },
+                  "password": { "type": "string" }
+                },
+                "required": ["username", "password"]
+              },
+              "example": { "username": "alice", "password": "1234" }
+            }
+          }
+        },
+        "responses": {
+          "200": { "description": "Login correcto" },
+          "401": { "description": "Credenciales incorrectas" },
+          "429": { "description": "Demasiados intentos" },
+          "500": { "description": "Error interno" }
+        }
+      }
+    },
+    "/logout": {
+      "post": {
+        "summary": "Logout de usuario",
+        "responses": {
+          "204": { "description": "Logout exitoso" },
+          "401": { "description": "No autorizado" },
+          "500": { "description": "Error interno" }
+        }
+      }
+    },
+    "/status": {
+      "head": {
+        "summary": "Comprobar estado del API",
+        "responses": {
+          "200": { "description": "OK" },
+          "503": { "description": "Servicio no disponible" }
+        }
+      },
+      "options": {
+        "summary": "Métodos permitidos",
+        "responses": {
+          "204": {
+            "description": "Métodos permitidos",
+            "headers": {
+              "Allow": { "schema": { "type": "string" }, "example": "GET,POST,OPTIONS" }
+            }
+          }
+        }
+      }
+    },
+    "/upload": {
+      "put": {
+        "summary": "Subir archivo",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "file": { "type": "string", "format": "binary" }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": { "description": "Archivo subido" },
+          "400": { "description": "Error en la subida" },
+          "413": { "description": "Archivo demasiado grande" },
+          "500": { "description": "Error interno" }
+        }
+      }
+    },
+    "/redirect": {
+      "get": {
+        "summary": "Redirección temporal",
+        "responses": {
+          "300": {
+            "description": "Múltiples opciones de redirección",
+            "headers": {
+              "Location": { "schema": { "type": "string" }, "example": "/users" }
+            }
+          },
+          "200": { "description": "Respuesta directa si no hay redirección" }
+        }
+      }
+    },
+    "/admin": {
+      "get": {
+        "summary": "Endpoint protegido para administradores",
+        "responses": {
+          "200": { "description": "Acceso permitido" },
+          "403": { "description": "Prohibido. No tienes permisos para acceder a este recurso." }
+        }
+      }
+    },
+    "/error-demo": {
+      "get": {
+        "summary": "Endpoint que puede fallar",
+        "responses": {
+          "200": { "description": "Todo correcto" },
+          "500": { "description": "Error interno del servidor" }
+        }
+      }
+    },
+    "/multiple-choices": {
+      "get": {
+        "summary": "Devuelve múltiples opciones (status 300)",
+        "responses": {
+          "300": {
+            "description": "Múltiples opciones disponibles",
+            "content": {
+              "application/json": {
+                "example": {
+                  "options": [
+                    { "url": "/users/1", "description": "Usuario 1" },
+                    { "url": "/users/2", "description": "Usuario 2" }
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/internal-error-demo": {
+      "post": {
+        "summary": "Demuestra un error interno (status 500)",
+        "requestBody": {
+          "required": false,
+          "content": {
+            "application/json": {
+              "schema": { "type": "object" },
+              "example": { "test": true }
+            }
+          }
+        },
+        "responses": {
+          "500": { "description": "Error interno del servidor generado a propósito" }
+        }
+      }
+    }
+  }
+}

@@ -18,23 +18,16 @@
   <div class="containerGeneral">
     <div class="containerMenu">
       <details name="options" id="dataSources">
-          <summary>Datasources <img src="assets/dataset.png" alt="config" style="height:1em;vertical-align:middle;"></summary>
-          <button>+ Add data source</button>
-
-      </details>
-      <details name="options" id="logsDetails">
-        <summary>Logs <img src="assets/logs.png" alt="config" style="height:1em;vertical-align:middle;"></summary>
-          <div id="logsTab" class="tab">
-            <pre id="logs"></pre>
-            <button id="refreshLogsBtn" class="outline contrast">Refresh</button>
-            <button id="clearLogsBtn" class="outline contrast">Clear</button>
-          </div>
+          <summary role="button"  class="outline secondary">Datasources</summary>
+          <form>
+            <input type="file" value="+ Add data source"></input>
+            <input type="submit" value="Save" disabled></input> 
+          </form>
       </details>
       <details name="options" id="settings">
-            <summary>Configuration<img src="assets/config.png" alt="config" style="height:1em;vertical-align:middle;"></summary>
+            <summary role="button" class="outline secondary">Configuration</summary>
           <div>
-            <label>Port: <input id="portInput" value="8000" size="6" /></label>
-            
+            <label>Port: <input class="pepon" id="portInput" value="8000" size="6" /></label>
             <label>Language:</label>
               <select id="langSelect">
                 <option selected disabled value="">Select</option>
@@ -44,30 +37,71 @@
           </div>
       </details>
     </div>
-      <article>
-        <header>API Management</header>
-        <fieldset role="group">
-          <input id="fileInput" type="text" placeholder="OpenAPI file" />
-          <button id="browseBtn" >Browse</button>
-        </fieldset>
-      
-        <fieldset>
-          <label>
-            Start <input name="start" type="checkbox" role="switch" id="startBtn"/>
-            <span id="status">🔴 Stopped</span>
-          </label>
-        </fieldset>
-
+    <div class="containerAPI">
+      <section>
+          <header><h3>API Management</h3></header>
+          <div class="container">
+          <fieldset role="group">
+            <input id="fileInput" type="text" placeholder="OpenAPI file" />
+            <button id="browseBtn" >Browse</button>
+          </fieldset>
+          <fieldset role="group">
+            <label>
+              Throttle requests:
+              <input type="range" value="0" id="delayServerMs"/>
+            </label>
+          </fieldset>
+          </div>
+          <footer>
+            <fieldset>
+              <label>
+                Start <input name="start" type="checkbox" role="switch" id="startBtn"/>
+                <span id="status">🔴 Stopped</span>
+              </label>
+            </fieldset>
+          </footer>
+      </section>
+      <section>
+      <details>
+        <summary role="button">Endpoints</summary>
+        <div id="routes"></div>
+      </details>
+      <details>
+        <summary role="button">Logs</summary>
+        <div id="logs" class="logs"></div>
         <footer>
-          <details>
-            <summary>Endpoints</summary>
-            <div id="routes"></div>
-          </details>
+          <fieldset role="group">
+            <button id="refreshLogsBtn" class="secondary">Refresh</button>
+            <button id="clearLogsBtn" class="outline secondary">Clear</button>
+          </fieldset>
         </footer>
-      </article>
+      </details>
+      </section>
+    </div> 
   </div>
+  <dialog id="modal-example">
+  <article>
+    <h2>Configure your endpoint</h2>
+    <p>
+      Thank you for signing up for a membership!
+      Please review the membership details below:
+    </p>
+    <form>
+      <ul>
+        <li></li>
+        <li></li>
+      </ul>
+      <footer>
+        <button class="secondary" onclick="toggleModal(event)">
+          Cancel
+        </button>
+        <button onclick="toggleModal(event)">Confirm</button>
+      </footer>
+    </form>
+  </article>
+  </dialog>
   <script>
-
+    
     // State
     let file = '';
     let routes = {};
@@ -103,7 +137,7 @@
       if (!paths || Object.keys(paths).length === 0) {
         return '<p>No endpoints found.</p>';
       }
-      let html = '<table><thead><tr><th>Method</th><th>Path</th><th>Status</th></tr></thead><tbody>';
+      let html = '<table><thead><tr><th>Method</th><th>Path</th><th>Status</th><th>Actions</th></tr></thead><tbody>';
       html += Object.entries(routes).map(([key, value]) => {
         // key: "get /api/v1/users/"
         // value: { status: ..., ... }
@@ -112,7 +146,7 @@
         const status = value.status || 'Unknown';
 
         const tr = document.createElement('tr');
-        tr.innerHTML = `<td><kbd>${verb.toUpperCase()}</kbd</td><td><code>${path}</code></td><td><kbd>${status}</kbd></td>`;
+        tr.innerHTML = `<td><kbd>${verb.toUpperCase()}</kbd</td><td><code>${path}</code></td><td><kbd>${status}</kbd></td><td><img onclick="toggleModal(event)" data-id="${verb+'_'+path}" src="assets/config.png" alt="dataset" style="height:1em;vertical-align:middle;"></td>`;
         return tr.outerHTML;
       }).join('');
       html += '</tbody></table>';
@@ -135,6 +169,9 @@
         if (ok) {
           status = '🔴 Stopped';
           document.getElementById('status').textContent = status;
+          document.getElementById('logs').textContent = '';
+          logs = [];
+
         }
       }
     });
@@ -149,12 +186,11 @@
       const logsContainer = document.getElementById('logs');
       
       if (logs.length === 0) {
-        logsContainer.innerHTML = '<div aria-busy="true">Loading logs...</div>';
+        logsContainer.innerHTML = '<div class="container" aria-busy="true"></div>';
       } 
 
       window.api.getLogs().then((newLogs) => {
-        console.log('New logs:', newLogs);
-        console.log('Current logs:', logs);
+
         if (newLogs.length <= logs.length) {
           // If no new logs, do not update
           return;
@@ -166,40 +202,170 @@
 
     function renderRequestArray(logs) {
     return logs.map(item => {
-        if(item.system) {
-          // System log, render differently
-          const card = document.createElement('article');
-          card.style.marginBottom = '1rem';
-          card.innerHTML = `<header><strong>${item.system}</strong></header>`;
-          return card.outerHTML;
-        }
         const card = document.createElement('article');
-        const { request, response }= item;
+        const { data, request, response }= item;
+
         card.style.marginBottom = '1rem';
 
-        card.innerHTML = `
-          
-          <strong><kbd>${request.method}</kbd>&nbsp<kbd>${response.status}</kbd> <span style="color: #3a3;">${request.path}</span></strong>
-          
-          <details name"Request">
-            <summary>Request</summary>
-            <div>
-            <pre>Headers:<code type="json">${JSON.stringify(request.headers, null, 2)}</code>\n</pre><hr>
-            <pre>Body:<code>${request.body ? request.body : '<empty>'}</code></pre>
-            </div>
-          </details>
-          <details name"Response">
-            <summary>Response</summary>
-            <div>
-            <pre>Headers:\n<code type="json">${JSON.stringify(response.headers, null, 2)}</code>\n</pre><hr>
-            <pre>Body:\n<code>${response.body ? response.body : '<empty>'}</code></pre>
-            </div>
-          </details>
-        `;
+        if(item.system) {
+          card.innerHTML = `<div class="container"><header class="contrast headRequest"><strong>${item.system}</strong></header></div>\n`;
+          return card.outerHTML;
+        }
+        let cardToRender = '';
+        if (parseInt(response.status) >= 500) {
+          card.classList.add('error_server');
+          cardToRender = renderError(data, request, response);
+        } else if (parseInt(response.status) >= 400) {
+          card.classList.add('not_found');
+          cardToRender = renderNotFound(data, request, response);
+        } else if(parseInt(response.status) >= 300) {
+          card.classList.add('moved');
+          cardToRender = renderMoved(data, request, response);
+        } else {
+          card.classList.add('success');
+          cardToRender = render(data, request, response);
+        }
+        card.innerHTML = cardToRender;
         return card.outerHTML;
       }).join('');
     }
 
+    function render(data, request, response) {
+      console.log('Rendering data:', data, 'response:', response);
+      return `
+        <div class="container parentRequestCard">
+          <div class="requestCardMenu">
+          <blockquote>
+            <p>${request.path}</p>
+            <div><kbd>${request.method}</kbd> <kbd style="background-color: #3a3;color:white">${response.status}</kbd></div>            
+            ${new Date(data.timestamp).toLocaleDateString()}
+          <footer>
+            <cite>${new Date(data.timestamp).toLocaleTimeString()}</cite>
+              </footer>
+          </blockquote>
+          </div>  
+          <div class="container requestCardContent">
+              <details name"Request">
+                <summary role="button" class="outline">Request</summary>
+                <div>
+                <pre><code type="json">${JSON.stringify(request.headers, null, 2)}</code>\n</pre><hr>
+                <pre><code>${request.body ? request.body : '<empty>'}</code></pre>
+                </div>
+              </details>
+              <details name"Response">
+                <summary role="button" class="outline">Response</summary>
+                <div>
+                <pre><code type="json">${JSON.stringify(response.headers, null, 2)}</code>\n</pre><hr>
+                <pre><code type="json">${response.body ? response.body : '<empty>'}</code></pre>
+                </div>
+              </details>
+            </div>
+          </div>
+        `;
+    }
+
+    function renderError(data, request, response) {
+      return `
+        <div class="container parentRequestCard">
+          <div class="requestCardMenu">
+          <blockquote>
+            <p>${request.path}</p>
+            <div><kbd>${request.method}</kbd> <kbd style="background-color: red;color:white">${response.status}</kbd></div>
+            ${new Date(data.timestamp).toLocaleDateString()}
+          <footer>
+            <cite>${new Date(data.timestamp).toLocaleTimeString()}</cite>
+              </footer>
+          </blockquote>
+
+          </div>  
+          <div class="container requestCardContent">
+              <details name"Request">
+                <summary role="button" class="outline">Request</summary>
+                <div>
+                <pre><code type="json">${JSON.stringify(request.headers, null, 2)}</code>\n</pre><hr>
+                <pre><code>${request.body ? request.body : '<empty>'}</code></pre>
+                </div>
+              </details>
+              <details name"Response">
+                <summary role="button" class="outline">Response</summary>
+                <div>
+                <pre><code type="json">${JSON.stringify(response.headers, null, 2)}</code>\n</pre><hr>
+                <pre><code type="json">${response.body ? response.body : '<empty>'}</code></pre>
+                </div>
+              </details>
+            </div>
+          </div>
+        `;
+    }
+
+    function renderNotFound(data, request, response) {
+      console.log('Rendering data:', data, 'response:', response);
+      return `
+        <div class="container parentRequestCard">
+          <div class="requestCardMenu">
+          <blockquote>
+            <p>${request.path}</p>
+            <div><kbd>${request.method}</kbd> <kbd style="background-color: orange;color:white">${response.status}</kbd></div>
+            ${new Date(data.timestamp).toLocaleDateString()}
+          <footer>
+            <cite>${new Date(data.timestamp).toLocaleTimeString()}</cite>
+              </footer>
+          </blockquote>
+
+          </div>  
+          <div class="container requestCardContent">
+              <details name"Request">
+                <summary role="button" class="outline">Request</summary>
+                <div>
+                <pre><code type="json">${JSON.stringify(request.headers, null, 2)}</code>\n</pre><hr>
+                <pre><code>${request.body ? request.body : '<empty>'}</code></pre>
+                </div>
+              </details>
+              <details name"Response">
+                <summary role="button" class="outline">Response</summary>
+                <div>
+                <pre><code type="json">${JSON.stringify(response.headers, null, 2)}</code>\n</pre><hr>
+                <pre><code type="json">${response.body ? response.body : '<empty>'}</code></pre>
+                </div>
+              </details>
+            </div>
+          </div>
+        `;
+    }
+    
+    function renderMoved(data, request, response) {
+      return `
+        <div class="container parentRequestCard">
+          <div class="requestCardMenu">
+          <blockquote>
+            <p>${request.path}</p>
+            <div><kbd>${request.method}</kbd> <kbd style="background-color: yellow;color:black">${response.status}</kbd></div>
+            ${new Date(data.timestamp).toLocaleDateString()}
+          <footer>
+            <cite>${new Date(data.timestamp).toLocaleTimeString()}</cite>
+              </footer>
+          </blockquote>
+          </div>  
+          <div class="container requestCardContent">
+              <details name"Request">
+                <summary role="button" class="outline">Request</summary>
+                <div>
+                <pre><code type="json">${JSON.stringify(request.headers, null, 2)}</code>\n</pre><hr>
+                <pre><code>${request.body ? request.body : '<empty>'}</code></pre>
+                </div>
+              </details>
+              <details name"Response">
+                <summary role="button" class="outline">Response</summary>
+                <div>
+                <pre><code type="json">${JSON.stringify(response.headers, null, 2)}</code>\n</pre><hr>
+                <pre><code type="json">${response.body ? response.body : '<empty>'}</code></pre>
+                </div>
+              </details>
+            </div>
+          </div>
+        `;
+    }
+    
     // Clear logs
     document.getElementById('clearLogsBtn').addEventListener('click', async () => {
       if (!window.api || !window.api.clearLogs) return;
@@ -218,13 +384,91 @@
       lang = e.target.value;
     });
 
+    document.getElementById('delayServerMs').addEventListener('input', (e) => {
+      const delay = parseInt(e.target.value, 10);
+      if (window.api && window.api.setDelay) {
+        window.api.setServerDelay(delay);
+      }
+    });
+
     function checkLogs() {
       setTimeout(() => {
         getAndRenderLogs();
         checkLogs();
       }, 5000); // Refresh logs every 5 seconds
     }
-    
+
+
+// Config
+const isOpenClass = "modal-is-open";
+const openingClass = "modal-is-opening";
+const closingClass = "modal-is-closing";
+const scrollbarWidthCssVar = "--pico-scrollbar-width";
+const animationDuration = 400; // ms
+let visibleModal = null;
+
+// Toggle modal
+const toggleModal = (event) => {
+  event.preventDefault();
+
+  const modal = document.getElementById("modal-example");
+  if (!modal) return;
+  modal && (modal.open ? closeModal(modal) : openModal(modal));
+};
+
+// Open modal
+const openModal = (modal) => {
+  const { documentElement: html } = document;
+  const scrollbarWidth = getScrollbarWidth();
+  if (scrollbarWidth) {
+    html.style.setProperty(scrollbarWidthCssVar, `${scrollbarWidth}px`);
+  }
+  html.classList.add(isOpenClass, openingClass);
+  setTimeout(() => {
+    visibleModal = modal;
+    html.classList.remove(openingClass);
+  }, animationDuration);
+  modal.showModal();
+};
+
+// Close modal
+const closeModal = (modal) => {
+  visibleModal = null;
+  const { documentElement: html } = document;
+  html.classList.add(closingClass);
+  setTimeout(() => {
+    html.classList.remove(closingClass, isOpenClass);
+    html.style.removeProperty(scrollbarWidthCssVar);
+    modal.close();
+  }, animationDuration);
+};
+
+// Close with a click outside
+document.addEventListener("click", (event) => {
+  if (visibleModal === null) return;
+  const modalContent = visibleModal.querySelector("article");
+  const isClickInside = modalContent.contains(event.target);
+  !isClickInside && closeModal(visibleModal);
+});
+
+// Close with Esc key
+document.addEventListener("keydown", (event) => {
+  if (event.key === "Escape" && visibleModal) {
+    closeModal(visibleModal);
+  }
+});
+
+// Get scrollbar width
+const getScrollbarWidth = () => {
+  const scrollbarWidth = window.innerWidth - document.documentElement.clientWidth;
+  return scrollbarWidth;
+};
+
+// Is scrollbar visible
+const isScrollbarVisible = () => {
+  return document.body.scrollHeight > screen.height;
+};
+
 
   </script>
 </body>

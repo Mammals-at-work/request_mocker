@@ -16,8 +16,8 @@ function createWindow() {
     },
   });
 
-  mainWindow.loadFile(path.join(__dirname,  'frontend', 'index.html'));
-  console.log('Loading index.html from:', path.join(__dirname, 'frontend', 'index.html'));
+  mainWindow.loadFile(path.join(__dirname, '..',  'frontend', 'index.html'));
+  console.log('Loading index.html from:', path.join(__dirname, '..', 'frontend', 'index.html'));
   // Añade esta línea para abrir las DevTools automáticamente
   if (mainWindow) {
     mainWindow.webContents.openDevTools();

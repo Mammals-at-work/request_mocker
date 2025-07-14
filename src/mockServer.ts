@@ -1,14 +1,27 @@
+// --- Latency simulation ---
+let serverDelay = 0;
+export function setServerDelay(ms: number) {
+  serverDelay = ms;
+}
+
 import http from 'http';
 import { YAMLObject } from './simpleYaml';
 import { loadSpecFile } from './specLoader';
+import { getOverride } from './db';
 
 let logs: LogEntry[] = [];
 
 export interface LogEntry {
+  data: LogEntryData;
   request: LogEntryRequest;
   response: LogEntryResponse;
   system?: LogSystem;
 } 
+
+export interface LogEntryData {
+  timestamp: number;
+  responseTime: number;
+};
 
 export interface LogSystem { 
   msg: string 
@@ -21,6 +34,9 @@ export interface LogEntryRequest {
   path: string;
   headers: Record<string, any>;
   body?: string;
+// --- Latency simulation ---
+
+
 }
 
 export interface LogEntryResponse {
@@ -29,6 +45,8 @@ export interface LogEntryResponse {
   body?: string | Record<string, any>;
 }
 
+// --- Latency simulation ---
+
 export interface Route {
   status: number;
   body: any;
@@ -36,7 +54,6 @@ export interface Route {
 }
 
 export function buildRoutes(spec: YAMLObject): Record<string, Route> {
-
   const routes: Record<string, Route> = {};
   const paths = spec.paths as YAMLObject | undefined;
   if (!paths) return routes;
@@ -93,13 +110,25 @@ export function startServer(specPath: string, port: number, dataPath?: string): 
       }
     }
   }
+
   logs = [];
-let bodyStr = '';
+  let bodyStr = '';
   const server = http.createServer((req, res) => {
+    // Helper to send the response (with simulated delay)
+    function sendResponse(status: number, body: any) {
+      setTimeout(() => {
+        res.statusCode = status;
+        if (typeof body === 'object') {
+          res.setHeader('Content-Type', 'application/json');
+          res.end(JSON.stringify(body));
+        } else {
+          res.end(String(body));
+        }
+        printLogsRequest(req, res);
+      }, serverDelay);
+    }
     if (!req.url || !req.method) {
-      res.statusCode = 404;
-      res.end('Not Found');
-      printLogsRequest(req, res);
+      sendResponse(404, 'Not Found');
       return;
     }
     bodyStr = '';
@@ -108,19 +137,20 @@ let bodyStr = '';
       const key = `${req.method!.toLowerCase()} ${req.url!}`;
       const route = routes[key];
       if (!route) {
-        res.statusCode = 404;
-        res.end('Not Found');
-        printLogsRequest(req, res);
+        sendResponse(404, 'Not Found');
         return;
       }
-      res.statusCode = route.status;
-      if (typeof route.body === 'object') {
-        res.setHeader('Content-Type', 'application/json');
-        res.end(JSON.stringify(route.body));
-      } else {
-        res.end(String(route.body));
-      }
-      printLogsRequest(req, res);
+      // Check for DB override
+      const [method, endpoint] = [req.method!.toLowerCase(), req.url!];
+      getOverride(method, endpoint, route.status, (err, row) => {
+        if (!err && row && row.body) {
+          let overrideBody;
+          try { overrideBody = JSON.parse(row.body); } catch { overrideBody = row.body; }
+          sendResponse(row.status, overrideBody);
+        } else {
+          sendResponse(route.status, route.body);
+        }
+      });
     });
   });
   server.listen(port, 'localhost');
@@ -136,7 +166,12 @@ let bodyStr = '';
   return server;
 
   function printLogsRequest(req: any, res: any){
-    logs.push({ request: {
+    logs.unshift({ 
+      data: {
+        timestamp: Date.now(),
+        responseTime: res.socket?.endTime ? res.socket.endTime - req.socket.startTime : 0,
+      },
+      request: {
         method: req.method!,
         path: req.url!,
         headers: req.headers,
@@ -149,7 +184,11 @@ let bodyStr = '';
   }
 
   function printLogSystem(msg: string){
-    logs.push({ request: undefined, response: undefined, system: { msg }});
+    logs.push({
+      data: { timestamp: Date.now(), responseTime: 0 },
+      request: undefined, 
+      response: undefined, 
+      system: { msg }});
   }
 }
 

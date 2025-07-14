@@ -1,4 +1,5 @@
 import { contextBridge, ipcRenderer } from 'electron';
+import { setServerDelay } from './mockServer';
 
 contextBridge.exposeInMainWorld('api', {
   selectFile: () => ipcRenderer.invoke('select-file'),
@@ -8,4 +9,7 @@ contextBridge.exposeInMainWorld('api', {
   listRoutes: (file: string, data?: string) => ipcRenderer.invoke('list-routes', file, data),
   getLogs: () => ipcRenderer.invoke('get-logs'),
   clearLogs: () => ipcRenderer.invoke('clear-logs'),
+  setServerDelay: (delay: number) => {
+    setServerDelay(delay);
+  }
 });
