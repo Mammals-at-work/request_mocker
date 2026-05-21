@@ -1,0 +1,29 @@
+{
+  "name": "@request-mocker/cli",
+  "version": "1.0.0",
+  "description": "Command-line interface for the request_mocker server",
+  "main": "dist/index.js",
+  "bin": {
+    "request-mocker": "dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "test": "jest --config jest.config.js"
+  },
+  "dependencies": {
+    "@request-mocker/core": "workspace:*",
+    "commander": "^12.1.0"
+  },
+  "devDependencies": {
+    "@types/jest": "^29.5.12",
+    "@types/node": "^20.12.0",
+    "@types/supertest": "^6.0.2",
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0",
+    "ts-jest": "^29.1.2",
+    "typescript": "^5.8.0"
+  }
+}

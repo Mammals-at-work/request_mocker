@@ -1,0 +1,20 @@
+{
+  "name": "@request-mocker/electron",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Electron desktop UI for request-mocker",
+  "main": "dist/main.js",
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "start": "pnpm --filter @request-mocker/core build && pnpm run build && electron .",
+    "test": "echo 'no electron tests' && exit 0"
+  },
+  "dependencies": {
+    "@request-mocker/core": "workspace:*"
+  },
+  "devDependencies": {
+    "@types/node": "^20.12.0",
+    "electron": "^42.2.0",
+    "typescript": "^5.8.0"
+  }
+}

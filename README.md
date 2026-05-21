@@ -1,6 +1,6 @@
 # request_mocker
 
-This repository contains a small desktop application built with **Electron** and **TypeScript**. The app lets you load an OpenAPI YAML or JSON file and instantly serve the defined routes locally. It is useful for mocking APIs during development without writing backend code.
+This repository contains a small desktop application built with **Electron** and **TypeScript**. The app lets you load an OpenAPI YAML or JSON file and instantly serve the defined routes locally. It can also run provider-specific adapters, starting with a Figma proxy recorder that captures real API responses and replays them later without network access.
 
 ## Usage
 
@@ -17,3 +17,24 @@ This repository contains a small desktop application built with **Electron** and
 
 A minimal YAML parser is included to avoid external dependencies. JSON specs are parsed using the built-in JSON parser. Only a subset of YAML features is supported.
 
+## Figma proxy recorder
+
+The Figma adapter has two modes:
+
+- **Record** forwards matching local requests to `https://api.figma.com`, using the token you enter for the current session only.
+- **Replay** serves previously recorded cassettes from disk and never calls Figma.
+
+To record a Figma response:
+
+1. Select **Figma** as the source.
+2. Choose **Record** and enter a Figma token.
+3. Keep the default cassette folder, `mock-cassettes/figma`, or choose another project-local folder.
+4. Start the server and call a Figma endpoint through localhost, for example `http://localhost:8000/v1/files/<file-key>`.
+
+To replay the response:
+
+1. Restart or stop the server.
+2. Select **Replay**.
+3. Call the same localhost endpoint again. If no matching cassette exists, the adapter returns an explicit local miss instead of contacting Figma.
+
+Cassettes are JSON files keyed by method, normalized path/query, and request body hash for non-GET requests. Sensitive headers such as `Authorization`, `X-Figma-Token`, cookies, and `Set-Cookie` are stripped before writing cassettes.
