@@ -1,7 +1,9 @@
 import fs from 'fs';
+import https from 'https';
 import os from 'os';
 import path from 'path';
-import { FigmaProxyAdapter } from '../src/adapters/figmaProxyAdapter';
+import { PassThrough } from 'stream';
+import { FigmaProxyAdapter, FIGMA_API_BASE_URL } from '../src/adapters/figmaProxyAdapter';
 
 function tmpDir(): string {
   return fs.mkdtempSync(path.join(os.tmpdir(), 'request-mocker-figma-'));
@@ -105,4 +107,51 @@ test('record mode stores upstream error statuses', async () => {
   expect(response.origin).toBe('recorded');
   expect(response.body).toEqual({ err: 'rate limited' });
   expect(fs.readdirSync(cassetteDir)).toHaveLength(1);
+});
+
+test('record mode uses the Figma API host and personal access token header', async () => {
+  const cassetteDir = tmpDir();
+  let capturedUrl: URL | undefined;
+  let capturedOptions: https.RequestOptions | undefined;
+  const requestSpy = jest.spyOn(https, 'request').mockImplementation((url: any, options: any, callback: any): any => {
+    capturedUrl = url;
+    capturedOptions = options;
+
+    const req = new PassThrough();
+    const res = new PassThrough() as any;
+    res.statusCode = 200;
+    res.headers = { 'Content-Type': 'application/json' };
+
+    process.nextTick(() => {
+      callback(res);
+      res.end(JSON.stringify({ ok: true }));
+    });
+
+    return req;
+  });
+
+  try {
+    const adapter = new FigmaProxyAdapter({
+      mode: 'record',
+      token: 'secret-token',
+      cassetteDir,
+    });
+
+    const response = await adapter.handle({
+      method: 'GET',
+      url: '/v1/files/abc?foo=bar',
+      headers: {
+        Authorization: 'Bearer wrong-header',
+        host: 'localhost:8000',
+      },
+    });
+
+    expect(response.origin).toBe('recorded');
+    expect(capturedUrl?.toString()).toBe(`${FIGMA_API_BASE_URL}v1/files/abc?foo=bar`);
+    expect(capturedOptions?.headers).toMatchObject({ 'X-Figma-Token': 'secret-token' });
+    expect((capturedOptions?.headers as Record<string, string>).Authorization).toBeUndefined();
+    expect((capturedOptions?.headers as Record<string, string>).host).toBeUndefined();
+  } finally {
+    requestSpy.mockRestore();
+  }
 });
