@@ -11,6 +11,7 @@ import {
 import { AdapterRequest, AdapterResponse, MockAdapter, RouteSummary } from './types';
 
 export type FigmaProxyMode = 'record' | 'replay';
+export const FIGMA_API_BASE_URL = 'https://api.figma.com/';
 
 export interface FigmaProxyOptions {
   mode: FigmaProxyMode;
@@ -40,7 +41,7 @@ export class FigmaProxyAdapter implements MockAdapter {
   constructor(options: FigmaProxyOptions) {
     this.mode = options.mode;
     if (options.token !== undefined) this.token = options.token;
-    this.baseUrl = options.baseUrl || 'https://api.figma.com';
+    this.baseUrl = options.baseUrl || FIGMA_API_BASE_URL;
     this.store = new CassetteStore(options.cassetteDir || DEFAULT_FIGMA_CASSETTE_DIR);
     this.fetcher = options.fetcher || fetchFromFigma;
   }
@@ -148,7 +149,7 @@ function fetchFromFigma(request: AdapterRequest, options: Required<Pick<FigmaPro
   return new Promise((resolve, reject) => {
     const upstream = new URL(request.url, options.baseUrl);
     const headers = sanitizeHeaders(request.headers);
-    headers.Authorization = `Bearer ${options.token}`;
+    headers['X-Figma-Token'] = options.token || '';
     delete headers.host;
     delete headers.Host;
 
