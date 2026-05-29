@@ -39,6 +39,18 @@ export interface Cassette {
     headers: Record<string, string>;
     body: StoredBody;
   };
+  assets?: CassetteAssets;
+}
+
+export interface CassetteAsset {
+  path: string;
+  contentType: string;
+  bytes: number;
+  sourceUrlHash: string;
+}
+
+export interface CassetteAssets {
+  images?: Record<string, CassetteAsset>;
 }
 
 export function sanitizeHeaders(headers: Record<string, any> = {}): Record<string, string> {
@@ -125,6 +137,7 @@ export class CassetteStore {
       fs.unlinkSync(path.join(this.dir, file));
       removed += 1;
     }
+    removed += new FigmaAssetStore(this.dir).clear();
     return removed;
   }
 
@@ -138,6 +151,63 @@ export class CassetteStore {
     } catch {
       return null;
     }
+  }
+}
+
+export class FigmaAssetStore {
+  private readonly assetsDir: string;
+
+  constructor(private readonly cassetteDir: string = DEFAULT_FIGMA_CASSETTE_DIR) {
+    this.assetsDir = path.join(cassetteDir, 'assets');
+  }
+
+  get directory(): string {
+    return this.assetsDir;
+  }
+
+  writeImage(args: {
+    cassetteHash: string;
+    nodeId: string;
+    sourceUrl: string;
+    contentType: string;
+    body: Buffer;
+  }): CassetteAsset {
+    fs.mkdirSync(this.assetsDir, { recursive: true });
+    const fileName = `${args.cassetteHash}_${sanitizeAssetName(args.nodeId)}.png`;
+    fs.writeFileSync(path.join(this.assetsDir, fileName), args.body);
+    return {
+      path: `assets/${fileName}`,
+      contentType: args.contentType || 'image/png',
+      bytes: args.body.length,
+      sourceUrlHash: sha256(args.sourceUrl),
+    };
+  }
+
+  read(relativePathOrFileName: string): { body: Buffer; contentType: string } | null {
+    const fileName = path.basename(relativePathOrFileName);
+    if (!isSafeAssetFileName(fileName)) return null;
+    const filePath = path.join(this.assetsDir, fileName);
+    if (!fs.existsSync(filePath)) return null;
+    return {
+      body: fs.readFileSync(filePath),
+      contentType: 'image/png',
+    };
+  }
+
+  clear(): number {
+    if (!fs.existsSync(this.assetsDir)) return 0;
+    let removed = 0;
+    for (const file of fs.readdirSync(this.assetsDir)) {
+      if (!file.endsWith('.png')) continue;
+      fs.unlinkSync(path.join(this.assetsDir, file));
+      removed += 1;
+    }
+    try {
+      fs.rmdirSync(this.assetsDir);
+    } catch {
+      // Leave the directory if it still contains user-created files.
+    }
+    return removed;
   }
 }
 
@@ -155,6 +225,15 @@ function shouldHashBody(method: string): boolean {
 
 function sha256(value: string): string {
   return crypto.createHash('sha256').update(value).digest('hex');
+}
+
+function sanitizeAssetName(value: string): string {
+  const safe = value.replace(/[^a-zA-Z0-9._-]/g, '_').replace(/^_+|_+$/g, '');
+  return safe || 'node';
+}
+
+function isSafeAssetFileName(value: string): boolean {
+  return /^[a-zA-Z0-9._-]+\.png$/.test(value);
 }
 
 function getHeader(headers: Record<string, any>, headerName: string): string {
