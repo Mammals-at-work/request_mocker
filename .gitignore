@@ -1,3 +1,5 @@
+packages/electron/mock-cassettes/
+
 # Logs
 logs
 *.log

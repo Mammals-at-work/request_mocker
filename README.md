@@ -38,3 +38,5 @@ To replay the response:
 3. Call the same localhost endpoint again. If no matching cassette exists, the adapter returns an explicit local miss instead of contacting Figma.
 
 Cassettes are JSON files keyed by method, normalized path/query, and request body hash for non-GET requests. Sensitive headers such as `Authorization`, `X-Figma-Token`, cookies, and `Set-Cookie` are stripped before writing cassettes.
+
+When recording `GET /v1/images/<file-key>?ids=<node-id>&format=png`, the recorder also downloads each PNG URL returned by Figma and stores it under `mock-cassettes/figma/assets`. In replay mode, the response JSON rewrites those temporary Figma image URLs to stable local URLs served by request-mocker, such as `http://localhost:8000/__mock__/figma-assets/<asset>.png`.
